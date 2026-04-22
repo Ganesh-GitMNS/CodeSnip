@@ -1,0 +1,7 @@
+{
+  "title": "List Comprehensions",
+  "language": "python",
+  "tags": ["list", "comprehension", "iteration", "filtering"],
+  "difficulty": "beginner",
+  "description": "Concise syntax for creating lists from iterables with optional filtering and transformation."
+}

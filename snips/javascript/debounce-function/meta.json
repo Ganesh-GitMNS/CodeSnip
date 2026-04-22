@@ -1,0 +1,12 @@
+{
+    "title": "Debounce Function",
+    "language": "javascript",
+    "tags": [
+        "debounce",
+        "performance",
+        "events",
+        "utility"
+    ],
+    "difficulty": "intermediate",
+    "description": "Limits the rate at which a function fires by waiting until a pause in calls."
+}

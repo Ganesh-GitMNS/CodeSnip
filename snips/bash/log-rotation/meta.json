@@ -1,0 +1,12 @@
+{
+    "title": "Log Rotation",
+    "language": "bash",
+    "tags": [
+        "logging",
+        "rotation",
+        "backup",
+        "sysadmin"
+    ],
+    "difficulty": "intermediate",
+    "description": "Rotates log files with timestamps and cleans up old backups beyond a configurable limit."
+}

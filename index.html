@@ -1,0 +1,2233 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="obsidian">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Snips | Antigravity IDE</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Theme Variables - Obsidian (Default Dark) */
+            --bg-body: #111111;
+            --bg-sidebar: #1a1a1a;
+            --bg-panel: #222222;
+            --bg-input: #333333;
+            --text-main: #ffffff;
+            --text-muted: #999999;
+            --accent: #ff2a5f;
+            /* Pinkish red from reference */
+            --accent-hover: #e02050;
+            --accent-gemini: #8b5cf6;
+            --accent-codex: #10b981;
+            --border: #333333;
+            --btn-text: #ffffff;
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --radius-sm: 8px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+        }
+
+        [data-theme="midnight"] {
+            --bg-body: #050b14;
+            --bg-sidebar: #0a1424;
+            --bg-panel: #111f38;
+            --bg-input: #1a2c4e;
+            --text-main: #ffffff;
+            --text-muted: #8aa1c2;
+            --accent: #219ebc;
+            --border: #23395d;
+            --btn-text: #ffffff;
+        }
+
+        [data-theme="neon"] {
+            --bg-body: #090014;
+            --bg-sidebar: #120029;
+            --bg-panel: #1d0042;
+            --bg-input: #29005c;
+            --text-main: #ffffff;
+            --text-muted: #a385c2;
+            --accent: #0affea;
+            --border: #3d0080;
+            --btn-text: #000000;
+            /* Dark text for neon accent */
+        }
+
+        [data-theme="light"] {
+            /* Light mode matching the reference image */
+            --bg-body: #f1efef;
+            --bg-sidebar: #f1efef;
+            --bg-panel: #ffffff;
+            --bg-input: #f5f5f5;
+            --text-main: #1a1a1a;
+            --text-muted: #666666;
+            --accent: #d82b54;
+            /* Pinkish red */
+            --accent-hover: #b82245;
+            --border: transparent;
+            --btn-text: #ffffff;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-ui);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-weight: 600;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: inherit;
+            font-family: inherit;
+            outline: none;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+        }
+
+        .sidebar-header {
+            padding: 10px 20px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header i {
+            font-size: 28px;
+            color: var(--text-main);
+            background: #111;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+
+        [data-theme="light"] .sidebar-header i {
+            background: #111;
+            color: #fff;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.2rem;
+            letter-spacing: 0.2px;
+            font-weight: 700;
+        }
+
+        .sidebar-actions {
+            padding: 10px 20px 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: var(--btn-text);
+            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            flex: 1;
+            transition: background 0.2s, transform 0.1s;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(216, 43, 84, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .folder-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 0;
+        }
+
+        /* Folders & Snippets */
+        .folder {
+            margin-bottom: 5px;
+        }
+
+        .folder-header {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .folder-header:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .folder-header i.fa-chevron-right {
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+        }
+
+        .folder.open .folder-header i.fa-chevron-right {
+            transform: rotate(90deg);
+        }
+
+        .folder-content {
+            display: none;
+            padding-left: 20px;
+            flex-direction: column;
+        }
+
+        .folder.open .folder-content {
+            display: flex;
+        }
+
+        .snippet-item {
+            padding: 10px 20px 10px 30px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: var(--radius-md);
+            margin: 2px 10px;
+            font-weight: 500;
+        }
+
+        .snippet-item:hover {
+            color: var(--text-main);
+            background-color: var(--bg-input);
+        }
+
+        .snippet-item.active {
+            color: var(--accent);
+            background-color: rgba(216, 43, 84, 0.08);
+            font-weight: 600;
+        }
+
+        /* --- Main Editor Area --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: var(--bg-body);
+            border-top-left-radius: var(--radius-lg);
+            border-bottom-left-radius: var(--radius-lg);
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.02);
+            margin: 10px 10px 10px 0;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
+        .topbar {
+            height: 80px;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: transparent;
+        }
+
+        .snippet-title-input {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 500;
+            font-family: var(--font-ui);
+            width: 400px;
+            padding: 12px 24px;
+            border-radius: var(--radius-lg);
+            outline: none;
+            box-shadow: var(--shadow);
+        }
+
+        .snippet-title-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .topbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            background-color: var(--bg-panel);
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Editor Wrapper */
+        .editor-container {
+            flex: 1;
+            padding: 0 40px 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-block {
+            background-color: var(--bg-panel);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+            height: 100%;
+            position: relative;
+        }
+
+        /* Editor Header with Pop-menus (Absolute top left and right) */
+        .note-header {
+            padding: 20px 30px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-header-left,
+        .note-header-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Custom Select / Pop-menu */
+        .pop-menu {
+            position: relative;
+        }
+
+        .pop-btn {
+            background-color: var(--bg-input);
+            border: none;
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .pop-btn:hover {
+            background-color: var(--border);
+        }
+
+        .pop-menu-dropdown {
+            position: absolute;
+            top: 100%;
+            margin-top: 8px;
+            background-color: var(--bg-panel);
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 220px;
+            display: none;
+            z-index: 100;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+
+        #ai-menu .pop-menu-dropdown {
+            right: 0;
+        }
+
+        #lang-menu .pop-menu-dropdown {
+            left: 0;
+        }
+
+        .pop-menu.active .pop-menu-dropdown {
+            display: block;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        .pop-item {
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+
+        .pop-item:hover {
+            background-color: var(--bg-input);
+        }
+
+        .pop-item.group-title {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            padding: 5px 15px;
+            pointer-events: none;
+            background: none;
+        }
+
+        .ai-gemini {
+            color: var(--accent-gemini);
+        }
+
+        .ai-codex {
+            color: var(--accent-codex);
+        }
+
+        .btn-ai-action {
+            background: linear-gradient(135deg, var(--accent-gemini), var(--accent-codex));
+            color: white;
+            /* Always white for contrast on gradients */
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.95;
+            transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-ai-action:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-ai-action:active {
+            transform: scale(0.98);
+        }
+
+        /* Textarea */
+        .code-input {
+            width: 100%;
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 20px;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        /* --- Modals / Panels --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background-color: var(--bg-panel);
+            border-radius: var(--radius-lg);
+            width: 500px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            animation: scaleIn 0.2s ease-out;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .key-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: var(--shadow);
+        }
+
+        .key-warning {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .key-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .lang-download-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .lang-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: var(--bg-input);
+            border-radius: var(--radius-md);
+        }
+
+        .lang-row .btn-download {
+            background-color: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .lang-row .btn-download.installed {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .lang-row .btn-download:hover:not(.installed) {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* AI Assistant Panel */
+        .ai-panel {
+            position: absolute;
+            right: 0;
+            top: 80px;
+            /* below topbar */
+            bottom: 0;
+            width: 400px;
+            background-color: var(--bg-panel);
+            border-left: 1px solid var(--bg-input);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.05);
+            border-top-left-radius: var(--radius-lg);
+        }
+
+        .ai-panel.open {
+            transform: translateX(0);
+        }
+
+        .ai-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .ai-header .close-ai {
+            margin-left: auto;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .ai-chat {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ai-bubble {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-width: 90%;
+        }
+
+        .ai-bubble.system {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            align-self: flex-start;
+        }
+
+        .ai-bubble.user {
+            background-color: var(--accent);
+            color: white;
+            align-self: flex-end;
+        }
+
+        /* Preloader for AI */
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .welcome-screen i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--border);
+        }
+
+        /* Snippet item delete button */
+        .snippet-item {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .snippet-item-label {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-delete-snippet {
+            opacity: 0;
+            pointer-events: none;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: opacity 0.2s, color 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .snippet-item:hover .btn-delete-snippet {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .btn-delete-snippet:hover {
+            color: #ff4d6d;
+            background: rgba(255, 77, 109, 0.1);
+        }
+
+        /* =====================
+           WORKSPACE SECTION
+           ===================== */
+        .workspace-section {
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+
+        .workspace-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px 6px;
+        }
+
+        .workspace-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .workspace-header-left i.fa-chevron-right {
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+
+        .workspace-section.open .workspace-header-left i.fa-chevron-right {
+            transform: rotate(90deg);
+        }
+
+        .workspace-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .ws-icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .ws-icon-btn:hover {
+            background: var(--bg-input);
+            color: var(--text-main);
+        }
+
+        .ws-icon-btn.accent {
+            color: var(--accent);
+        }
+
+        .workspace-tree {
+            display: none;
+            flex-direction: column;
+            padding: 4px 0;
+        }
+
+        .workspace-section.open .workspace-tree {
+            display: flex;
+        }
+
+        /* Root folder label (the opened PC folder) */
+        .ws-root-label {
+            padding: 6px 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-style: italic;
+        }
+
+        .ws-root-label i {
+            color: var(--accent);
+        }
+
+        /* Subfolder row */
+        .ws-folder {
+            margin-bottom: 2px;
+        }
+
+        .ws-folder-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 20px 8px 28px;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            margin: 2px 10px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .ws-folder-header:hover {
+            background: var(--bg-input);
+            color: var(--text-main);
+        }
+
+        .ws-folder-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ws-folder-header i.fa-chevron-right {
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .ws-folder.open .ws-folder-header i.fa-chevron-right {
+            transform: rotate(90deg);
+        }
+
+        .ws-folder-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .ws-folder-header:hover .ws-folder-actions {
+            opacity: 1;
+        }
+
+        .ws-folder-actions button {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .ws-folder-actions button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .ws-file-list {
+            display: none;
+            flex-direction: column;
+            padding-left: 10px;
+        }
+
+        .ws-folder.open .ws-file-list {
+            display: flex;
+        }
+
+        /* File / snip row in workspace */
+        .ws-file-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px 8px 42px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            margin: 2px 10px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .ws-file-item-label {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ws-delete-snippet {
+            opacity: 0;
+            pointer-events: none;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: opacity 0.2s, color 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .ws-file-item:hover .ws-delete-snippet {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .ws-delete-snippet:hover {
+            color: #ff4d6d;
+            background: rgba(255, 77, 109, 0.1);
+        }
+
+        .ws-file-item:hover {
+            background: var(--bg-input);
+            color: var(--text-main);
+        }
+
+        .ws-file-item.active {
+            color: var(--accent);
+            background: rgba(216, 43, 84, 0.08);
+        }
+
+        /* Workspace no-folder placeholder */
+        .ws-placeholder {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Saved-to-disk badge */
+        .disk-save-badge {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #10b981;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .disk-save-badge.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-meteor"></i>
+            <h2>Code Snips</h2>
+        </div>
+
+        <div class="sidebar-actions">
+            <button class="btn-primary" id="btn-new-snippet">
+                <i class="fa-solid fa-plus"></i> New Snippet
+            </button>
+        </div>
+
+        <!-- ===== WORKSPACE SECTION ===== -->
+        <div class="workspace-section open" id="workspace-section">
+            <div class="workspace-header">
+                <div class="workspace-header-left"
+                    onclick="document.getElementById('workspace-section').classList.toggle('open')">
+                    <i class="fa-solid fa-chevron-right"></i>
+                    <i class="fa-solid fa-hard-drive"></i>
+                    <span>My Workspace</span>
+                </div>
+                <div class="workspace-actions">
+                    <button class="ws-icon-btn accent" id="btn-open-folder" title="Open folder from PC">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </button>
+                    <button class="ws-icon-btn" id="btn-new-ws-folder" title="New folder in workspace" disabled>
+                        <i class="fa-solid fa-folder-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="workspace-tree" id="workspace-tree">
+                <div class="ws-placeholder" id="ws-placeholder">Open a folder from your PC to get started.</div>
+            </div>
+        </div>
+
+        <!-- ===== IN-APP SNIPPET LIBRARY ===== -->
+        <div class="folder-list" id="sidebar-folders">
+            <!-- Folders rendered here via JS -->
+        </div>
+    </aside>
+
+    <!-- Disk save badge -->
+    <div class="disk-save-badge" id="disk-save-badge">
+        <i class="fa-solid fa-floppy-disk"></i> Saved to disk
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <header class="topbar">
+            <input type="text" id="active-title" class="snippet-title-input" placeholder="Search or name snippet..."
+                style="visibility: hidden;">
+
+            <div class="topbar-controls">
+                <!-- Theme Select Menu -->
+                <div class="pop-menu" id="theme-menu">
+                    <button class="icon-btn pop-btn" title="Theme">
+                        <i class="fa-solid fa-palette"></i>
+                    </button>
+                    <div class="pop-menu-dropdown">
+                        <div class="pop-item group-title">Themes</div>
+                        <div class="pop-item" onclick="setTheme('obsidian')"><i class="fa-solid fa-moon"></i> Obsidian
+                            Dark</div>
+                        <div class="pop-item" onclick="setTheme('midnight')"><i class="fa-solid fa-star"></i> Midnight
+                            Blue</div>
+                        <div class="pop-item" onclick="setTheme('neon')"><i class="fa-solid fa-bolt"></i> Neon Cyber
+                        </div>
+                        <div class="pop-item" onclick="setTheme('light')"><i class="fa-solid fa-sun"></i> Light Clean
+                        </div>
+                    </div>
+                </div>
+
+                <button class="icon-btn" id="btn-lang-manager" title="Language Manager">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Editor Container -->
+        <div class="editor-container" id="editor-container">
+            <!-- Welcome screen shown when no snippet selected -->
+            <div class="welcome-screen" id="welcome-screen">
+                <i class="fa-solid fa-code"></i>
+                <h2>Code Snip Workspace</h2>
+                <p>Select a snippet from the sidebar or create a new one.</p>
+            </div>
+
+            <!-- Note Block (hidden initially) -->
+            <div class="note-block" id="note-block" style="display: none;">
+                <div class="note-header">
+                    <div class="note-header-left">
+                        <div class="pop-menu" id="lang-menu">
+                            <button class="pop-btn" title="Language selection (top-left)">
+                                <i class="fa-regular fa-file-code"></i> <span id="current-lang">Markdown</span> <i
+                                    class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+                            </button>
+                            <div class="pop-menu-dropdown" id="lang-dropdown-list">
+                                <!-- Populated dynamically based on downloaded languages -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="note-header-right">
+                        <!-- AI Assistant Selector Pop Menu -->
+                        <div class="pop-menu" id="ai-menu">
+                            <button class="pop-btn">
+                                <i id="current-ai-icon" class="fa-solid fa-sparkles ai-gemini"></i>
+                                <span id="current-ai-name">Gemini (UI/Frontend)</span>
+                                <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+                            </button>
+                            <div class="pop-menu-dropdown">
+                                <div class="pop-item" onclick="selectAi('gemini')">
+                                    <i class="fa-solid fa-sparkles ai-gemini"></i> Gemini (UI/Frontend)
+                                </div>
+                                <div class="pop-item" onclick="selectAi('codex')">
+                                    <i class="fa-solid fa-robot ai-codex"></i> Codex (Logic/Backend)
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn-ai-action" id="btn-analyze">
+                            <i class="fa-solid fa-magic"></i> Analyze
+                        </button>
+                    </div>
+                </div>
+
+                <textarea class="code-input" id="code-editor"
+                    placeholder="Write or paste your code snippet here... Feels like a note app!"
+                    spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <!-- AI Assistant Slide Panel -->
+        <div class="ai-panel" id="ai-panel">
+            <div class="ai-header">
+                <i id="ai-panel-icon" class="fa-solid fa-sparkles ai-gemini"></i>
+                <span id="ai-panel-title">Gemini Assistant</span>
+                <i class="fa-solid fa-xmark close-ai" onclick="closeAiPanel()"></i>
+            </div>
+            <div class="ai-chat" id="ai-chat-box">
+                <!-- Chat bubbles go here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Language Manager Modal -->
+    <div class="modal-overlay" id="lang-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>Language Manager</span>
+                <button class="icon-btn" style="width:24px;height:24px;" onclick="closeModal('lang-modal')"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                    Download additional languages to use in your Code Snip app.
+                </p>
+                <div class="lang-download-list" id="lang-download-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Modal -->
+    <div class="modal-overlay" id="key-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <span id="key-modal-title">API Key Required</span>
+                <button class="icon-btn" style="width:24px;height:24px;" onclick="closeKeyModal()"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 12px;">
+                    Enter your API key to run real analysis for this provider.
+                </p>
+                <input class="key-input" id="key-input" type="password" placeholder="Paste your API key here" />
+                <div class="key-warning">
+                    Security note: client-side API keys can be extracted from the browser. For production use, route
+                    requests through a backend.
+                </div>
+                <div class="key-actions">
+                    <button class="btn-secondary" onclick="closeKeyModal()">Cancel</button>
+                    <button class="btn-primary" onclick="saveKeyFromModal()">Save Key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script>
+        // --- State Management ---
+        const builtInLangs = [
+            { id: 'markdown', name: 'MarkDown' },
+            { id: 'python', name: 'Python' },
+            { id: 'cpp', name: 'C++' },
+            { id: 'c', name: 'C' },
+            { id: 'java', name: 'Java' },
+            { id: 'javascript', name: 'Javascript' },
+            { id: 'html', name: 'HTML' },
+            { id: 'css', name: 'CSS' },
+            { id: 'xml', name: 'XML' }
+        ];
+
+        const availableDownloads = [
+            { id: 'go', name: 'Go' },
+            { id: 'rust', name: 'Rust' },
+            { id: 'ruby', name: 'Ruby' },
+            { id: 'php', name: 'PHP' },
+            { id: 'sql', name: 'SQL' },
+            { id: 'bash', name: 'Bash' }
+        ];
+
+        const AI_CONFIG = {
+            openai: {
+                model: 'gpt-5',
+                endpoint: 'https://api.openai.com/v1/responses',
+            },
+            gemini: {
+                model: 'gemini-2.5-flash',
+                endpointBase: 'https://generativelanguage.googleapis.com/v1beta/models/',
+            }
+        };
+
+        let state = {
+            theme: localStorage.getItem('cs_theme') || 'obsidian',
+            downloadedLangs: JSON.parse(localStorage.getItem('cs_langs')) || [],
+            snippets: JSON.parse(localStorage.getItem('cs_snippets')) || [
+                // Sample Data
+                { id: '1', title: 'List Comprehensions', langId: 'python', code: '[x**2 for x in range(10)]\n# Very clean Python syntax!' },
+                { id: '2', title: 'Debounce Function', langId: 'javascript', code: 'function debounce(fn, wait) {\n  let timeout; return (...args) => {\n    clearTimeout(timeout); timeout = setTimeout(() => fn(...args), wait);\n  };\n}' }
+            ],
+            activeSnippetId: null,
+            activeAi: 'gemini' // 'gemini' or 'codex'
+        };
+
+        let sessionKeys = {
+            openai: null,
+            gemini: null
+        };
+
+        let aiBusy = false;
+        let pendingKeyProvider = null;
+
+        // --- Initialization ---
+        function init() {
+            setTheme(state.theme);
+            renderSidebar();
+            renderLangDownloads();
+            setupPopMenus();
+
+            // Event Listeners for Editor Auto-save
+            document.getElementById('code-editor').addEventListener('input', saveActiveSnippet);
+            document.getElementById('active-title').addEventListener('input', () => {
+                saveActiveSnippet();
+                renderSidebar(); // Update title in sidebar live
+            });
+
+            // Lang Manager
+            document.getElementById('btn-lang-manager').addEventListener('click', () => {
+                document.getElementById('lang-modal').style.display = 'flex';
+            });
+
+            // New Snippet
+            document.getElementById('btn-new-snippet').addEventListener('click', createSnippet);
+
+            // Analyze
+            document.getElementById('btn-analyze').addEventListener('click', runAiAnalysis);
+
+            // Clicking outside pop-menus closes them
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.pop-menu')) {
+                    document.querySelectorAll('.pop-menu').forEach(menu => menu.classList.remove('active'));
+                }
+            });
+
+            document.getElementById('key-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') saveKeyFromModal();
+            });
+        }
+
+        // --- Core Functions ---
+
+        function saveState() {
+            localStorage.setItem('cs_snippets', JSON.stringify(state.snippets));
+            localStorage.setItem('cs_langs', JSON.stringify(state.downloadedLangs));
+            localStorage.setItem('cs_theme', state.theme);
+        }
+
+        function setTheme(themeName) {
+            state.theme = themeName;
+            document.documentElement.setAttribute('data-theme', themeName);
+            saveState();
+        }
+
+        function getAllActiveLangs() {
+            const downloads = availableDownloads.filter(l => state.downloadedLangs.includes(l.id));
+            return [...builtInLangs, ...downloads];
+        }
+
+        function getLangName(langId) {
+            const all = [...builtInLangs, ...availableDownloads];
+            const found = all.find(l => l.id === langId);
+            return found ? found.name : 'Unknown';
+        }
+
+        // --- Sidebar Rendering (Req 11 & 12) ---
+        function renderSidebar() {
+            const container = document.getElementById('sidebar-folders');
+            container.innerHTML = '';
+
+            // Group snippets by language
+            const groups = {};
+            state.snippets.forEach(s => {
+                if (!groups[s.langId]) groups[s.langId] = [];
+                groups[s.langId].push(s);
+            });
+
+            const allLangs = getAllActiveLangs();
+
+            allLangs.forEach(lang => {
+                const snips = groups[lang.id] || [];
+                if (snips.length === 0) return; // Only show folders that have snippets
+
+                // Determine if folder should be open (if active snippet is inside)
+                const isOpen = snips.some(s => s.id === state.activeSnippetId);
+
+                const folderEl = document.createElement('div');
+                folderEl.className = `folder ${isOpen ? 'open' : ''}`;
+
+                folderEl.innerHTML = `
+                    <div class="folder-header" onclick="this.parentElement.classList.toggle('open')">
+                        <i class="fa-solid fa-chevron-right"></i>
+                        <i class="fa-regular fa-folder"></i>
+                        <span>${lang.name}</span>
+                    </div>
+                `;
+
+                const contentEl = document.createElement('div');
+                contentEl.className = 'folder-content';
+
+                snips.forEach(snip => {
+                    const snipEl = document.createElement('div');
+                    snipEl.className = `snippet-item ${snip.id === state.activeSnippetId ? 'active' : ''}`;
+                    snipEl.innerHTML = `
+                        <span class="snippet-item-label">
+                            <i class="fa-regular fa-file-code" style="margin-right:6px"></i>${snip.title || 'Untitled'}
+                        </span>
+                        <button class="btn-delete-snippet" title="Delete snippet">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    `;
+                    snipEl.onclick = (e) => {
+                        if (e.target.closest('.btn-delete-snippet')) return;
+                        e.stopPropagation();
+                        loadSnippet(snip.id);
+                    };
+                    snipEl.querySelector('.btn-delete-snippet').onclick = (e) => {
+                        e.stopPropagation();
+                        deleteSnippet(snip.id);
+                    };
+                    contentEl.appendChild(snipEl);
+                });
+
+                folderEl.appendChild(contentEl);
+                container.appendChild(folderEl);
+            });
+        }
+
+        // --- Snippet Management ---
+        function deleteSnippet(id) {
+            if (!confirm('Delete this snippet? This cannot be undone.')) return;
+            state.snippets = state.snippets.filter(s => s.id !== id);
+            // If the deleted snippet was open, go back to welcome screen
+            if (state.activeSnippetId === id) {
+                state.activeSnippetId = null;
+                document.getElementById('welcome-screen').style.display = 'flex';
+                document.getElementById('note-block').style.display = 'none';
+                document.getElementById('active-title').style.visibility = 'hidden';
+                closeAiPanel();
+            }
+            saveState();
+            renderSidebar();
+        }
+        function createSnippet() {
+            const newId = Date.now().toString();
+            const newSnip = {
+                id: newId,
+                title: 'New Snippet',
+                langId: 'markdown', // Default
+                code: ''
+            };
+            state.snippets.push(newSnip);
+            saveState();
+            loadSnippet(newId);
+            renderSidebar();
+        }
+
+        function loadSnippet(id) {
+            state.activeSnippetId = id;
+            const snip = state.snippets.find(s => s.id === id);
+
+            if (snip) {
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('note-block').style.display = 'flex';
+                document.getElementById('active-title').style.visibility = 'visible';
+
+                document.getElementById('active-title').value = snip.title;
+                document.getElementById('code-editor').value = snip.code;
+
+                updateLangMenuSelection(snip.langId);
+                renderSidebar(); // Update active class
+                closeAiPanel(); // reset AI state on switch
+            }
+        }
+
+        function saveActiveSnippet() {
+            if (!state.activeSnippetId) return;
+            const snip = state.snippets.find(s => s.id === state.activeSnippetId);
+            if (snip) {
+                snip.title = document.getElementById('active-title').value;
+                snip.code = document.getElementById('code-editor').value;
+                saveState();
+            }
+        }
+
+        // --- Pop Menus (Req 5, 6, 9) ---
+        function setupPopMenus() {
+            document.querySelectorAll('.pop-menu').forEach(menu => {
+                const btn = menu.querySelector('.pop-btn');
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Close others
+                    document.querySelectorAll('.pop-menu').forEach(m => {
+                        if (m !== menu) m.classList.remove('active');
+                    });
+                    menu.classList.toggle('active');
+                });
+            });
+
+            renderLangDropdown();
+        }
+
+        function renderLangDropdown() {
+            const container = document.getElementById('lang-dropdown-list');
+            container.innerHTML = '';
+
+            // Built in
+            container.innerHTML += `<div class="pop-item group-title">Built-in</div>`;
+            builtInLangs.forEach(lang => {
+                container.innerHTML += `<div class="pop-item" onclick="changeSnippetLang('${lang.id}')">${lang.name}</div>`;
+            });
+
+            // Downloaded
+            if (state.downloadedLangs.length > 0) {
+                container.innerHTML += `<div class="pop-item group-title">Downloaded</div>`;
+                availableDownloads.filter(l => state.downloadedLangs.includes(l.id)).forEach(lang => {
+                    container.innerHTML += `<div class="pop-item" onclick="changeSnippetLang('${lang.id}')">${lang.name}</div>`;
+                });
+            }
+        }
+
+        function changeSnippetLang(langId) {
+            if (wsState && wsState.activeFileHandle) {
+                changeWorkspaceLang(langId);
+                updateLangMenuSelection(langId);
+                document.getElementById('lang-menu').classList.remove('active');
+                return;
+            }
+            if (!state.activeSnippetId) return;
+            const snip = state.snippets.find(s => s.id === state.activeSnippetId);
+            if (snip) {
+                snip.langId = langId;
+                saveState();
+                updateLangMenuSelection(langId);
+                renderSidebar(); // Folder group might have changed
+            }
+            document.getElementById('lang-menu').classList.remove('active');
+        }
+
+        function updateLangMenuSelection(langId) {
+            document.getElementById('current-lang').innerText = getLangName(langId);
+        }
+
+        function selectAi(type) {
+            state.activeAi = type;
+            const icon = document.getElementById('current-ai-icon');
+            const name = document.getElementById('current-ai-name');
+
+            icon.className = `fa-solid ${type === 'gemini' ? 'fa-sparkles ai-gemini' : 'fa-robot ai-codex'}`;
+            name.innerText = type === 'gemini' ? 'Gemini (UI/Frontend)' : 'Codex (Logic/Backend)';
+
+            document.getElementById('ai-menu').classList.remove('active');
+        }
+
+        // --- Language Downloads (Req 4) ---
+        function renderLangDownloads() {
+            const container = document.getElementById('lang-download-container');
+            container.innerHTML = '';
+
+            availableDownloads.forEach(lang => {
+                const isDownloaded = state.downloadedLangs.includes(lang.id);
+                const btn = isDownloaded
+                    ? `<button class="btn-download installed"><i class="fa-solid fa-check"></i> Installed</button>`
+                    : `<button class="btn-download" onclick="downloadLang('${lang.id}')"><i class="fa-solid fa-download"></i> Download</button>`;
+
+                container.innerHTML += `
+                    <div class="lang-row">
+                        <span><strong>${lang.name}</strong></span>
+                        ${btn}
+                    </div>
+                `;
+            });
+            renderLangDropdown(); // Sync pop menu
+        }
+
+        function downloadLang(langId) {
+            if (!state.downloadedLangs.includes(langId)) {
+                state.downloadedLangs.push(langId);
+                saveState();
+                renderLangDownloads();
+                renderSidebar();
+
+                // Show notification feedback (simple alert for this implementation)
+                const btn = event.target;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Installing...`;
+                setTimeout(() => {
+                    renderLangDownloads();
+                }, 800);
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // --- API Key Modal ---
+        function openKeyModal(provider) {
+            pendingKeyProvider = provider;
+            const title = provider === 'openai' ? 'OpenAI API Key Required' : 'Gemini API Key Required';
+            document.getElementById('key-modal-title').innerText = title;
+            document.getElementById('key-input').value = '';
+            document.getElementById('key-modal').style.display = 'flex';
+        }
+
+        function closeKeyModal() {
+            pendingKeyProvider = null;
+            document.getElementById('key-modal').style.display = 'none';
+        }
+
+        function saveKeyFromModal() {
+            const input = document.getElementById('key-input');
+            const key = (input.value || '').trim();
+            if (!key || !pendingKeyProvider) return;
+            sessionKeys[pendingKeyProvider] = key;
+            closeKeyModal();
+        }
+
+        function getProviderFromActiveAi() {
+            return state.activeAi === 'gemini' ? 'gemini' : 'openai';
+        }
+
+        async function ensureApiKey(provider) {
+            if (sessionKeys[provider]) return true;
+            openKeyModal(provider);
+            return new Promise((resolve) => {
+                const check = setInterval(() => {
+                    if (!pendingKeyProvider && sessionKeys[provider]) {
+                        clearInterval(check);
+                        resolve(true);
+                    }
+                    if (!pendingKeyProvider && !sessionKeys[provider]) {
+                        clearInterval(check);
+                        resolve(false);
+                    }
+                }, 200);
+            });
+        }
+
+        function setAnalyzeBusy(isBusy) {
+            aiBusy = isBusy;
+            const btn = document.getElementById('btn-analyze');
+            btn.disabled = isBusy;
+            btn.style.opacity = isBusy ? '0.6' : '1';
+        }
+
+        function renderAiError(message) {
+            const chatBox = document.getElementById('ai-chat-box');
+            chatBox.innerHTML += `
+                <div class="ai-bubble system" style="border-color: #ff4d6d; color: #ff4d6d;">
+                    ${message}
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function stripCodeFences(text) {
+            if (!text) return '';
+            const match = text.match(/```[a-zA-Z0-9]*\n([\s\S]*?)```/);
+            if (match && match[1]) return match[1].trim();
+            return text.trim();
+        }
+
+        function getActiveSnippetLangId() {
+            if (!state.activeSnippetId) return 'markdown';
+            const snip = state.snippets.find(s => s.id === state.activeSnippetId);
+            return snip ? snip.langId : 'markdown';
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatAiText(text) {
+            return escapeHtml(text || '').replace(/\n/g, '<br>');
+        }
+
+        function extractOpenAiText(payload) {
+            if (payload && payload.output_text) return payload.output_text;
+            const output = payload && payload.output ? payload.output : [];
+            for (const item of output) {
+                if (!item || !item.content) continue;
+                for (const part of item.content) {
+                    if (part && (part.type === 'output_text' || part.type === 'text') && part.text) {
+                        return part.text;
+                    }
+                }
+            }
+            return '';
+        }
+
+        function extractGeminiText(payload) {
+            const parts = payload && payload.candidates && payload.candidates[0] && payload.candidates[0].content
+                ? payload.candidates[0].content.parts
+                : [];
+            if (!parts || parts.length === 0) return '';
+            return parts.map(p => p.text || '').join('');
+        }
+
+        function normalizeErrorMessage(status, payload) {
+            if (payload && payload.error && payload.error.message) return payload.error.message;
+            if (payload && payload.message) return payload.message;
+            if (status === 401 || status === 403) return 'Unauthorized. Please check your API key.';
+            return 'Request failed. Please try again.';
+        }
+
+        async function callOpenAiAnalysis(langName, code) {
+            const prompt = `You are Codex, a logic and backend code reviewer. Review the ${langName} snippet below.\n\nReturn a concise report with:\n1) Summary (1-2 sentences)\n2) Issues/Risks (bullets)\n3) Improvements (bullets)\n\nCode:\n${code}`;
+            const res = await fetch(AI_CONFIG.openai.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionKeys.openai}`
+                },
+                body: JSON.stringify({
+                    model: AI_CONFIG.openai.model,
+                    input: prompt
+                })
+            });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(normalizeErrorMessage(res.status, payload));
+            const text = extractOpenAiText(payload) || '';
+            return formatAiText(text);
+        }
+
+        async function callGeminiAnalysis(langName, code) {
+            const prompt = `You are Gemini, a UI and frontend code reviewer. Review the ${langName} snippet below.\n\nReturn a concise report with:\n1) Summary (1-2 sentences)\n2) UI/UX Issues (bullets)\n3) Improvements (bullets)\n\nCode:\n${code}`;
+            const url = `${AI_CONFIG.gemini.endpointBase}${AI_CONFIG.gemini.model}:generateContent`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': sessionKeys.gemini
+                },
+                body: JSON.stringify({
+                    contents: [
+                        { role: 'user', parts: [{ text: prompt }] }
+                    ]
+                })
+            });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(normalizeErrorMessage(res.status, payload));
+            const text = extractGeminiText(payload) || '';
+            return formatAiText(text);
+        }
+
+        async function callOpenAiFix(langName, code) {
+            const prompt = `You are Codex. Improve the following ${langName} code. Return ONLY the revised code, no explanations and no markdown fences.\n\nCode:\n${code}`;
+            const res = await fetch(AI_CONFIG.openai.endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionKeys.openai}`
+                },
+                body: JSON.stringify({
+                    model: AI_CONFIG.openai.model,
+                    input: prompt
+                })
+            });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(normalizeErrorMessage(res.status, payload));
+            return extractOpenAiText(payload) || '';
+        }
+
+        async function callGeminiFix(langName, code) {
+            const prompt = `Improve the following ${langName} code. Return ONLY the revised code, no explanations and no markdown fences.\n\nCode:\n${code}`;
+            const url = `${AI_CONFIG.gemini.endpointBase}${AI_CONFIG.gemini.model}:generateContent`;
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-goog-api-key': sessionKeys.gemini
+                },
+                body: JSON.stringify({
+                    contents: [
+                        { role: 'user', parts: [{ text: prompt }] }
+                    ]
+                })
+            });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(normalizeErrorMessage(res.status, payload));
+            return extractGeminiText(payload) || '';
+        }
+
+        // --- AI Real API Logic ---
+        async function runAiAnalysis() {
+            if (!state.activeSnippetId) return;
+            const code = document.getElementById('code-editor').value;
+            if (!code.trim()) return;
+            if (aiBusy) return;
+
+            const provider = getProviderFromActiveAi();
+            const hasKey = await ensureApiKey(provider);
+            if (!hasKey) return;
+
+            const panel = document.getElementById('ai-panel');
+            const chatBox = document.getElementById('ai-chat-box');
+
+            // Set up Panel header based on AI choice
+            const icon = document.getElementById('ai-panel-icon');
+            const title = document.getElementById('ai-panel-title');
+
+            if (state.activeAi === 'gemini') {
+                icon.className = 'fa-solid fa-sparkles ai-gemini';
+                title.innerText = 'Gemini Analysis';
+            } else {
+                icon.className = 'fa-solid fa-robot ai-codex';
+                title.innerText = 'Codex Analysis';
+            }
+
+            panel.classList.add('open');
+            chatBox.innerHTML = '';
+
+            // User message
+            const snip = state.snippets.find(s => s.id === state.activeSnippetId);
+            const langName = getLangName(snip.langId);
+            chatBox.innerHTML += `
+                <div class="ai-bubble user">
+                    Please review my ${langName} code.
+                </div>
+            `;
+
+            // Loading state
+            const loadingHtml = `
+                <div class="ai-bubble system" id="ai-loading">
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                </div>
+            `;
+            chatBox.innerHTML += loadingHtml;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setAnalyzeBusy(true);
+            try {
+                const responseText = provider === 'gemini'
+                    ? await callGeminiAnalysis(langName, code)
+                    : await callOpenAiAnalysis(langName, code);
+
+                document.getElementById('ai-loading').remove();
+                chatBox.innerHTML += `
+                    <div class="ai-bubble system">
+                        ${responseText}
+                        <br><br>
+                        <button class="btn-primary" style="margin-top: 10px; font-size:0.8rem" onclick="applyFakeFix()">Apply Suggested Fixes</button>
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) {
+                document.getElementById('ai-loading').remove();
+                renderAiError(err.message || 'Request failed. Please try again.');
+            } finally {
+                setAnalyzeBusy(false);
+            }
+        }
+
+        function closeAiPanel() {
+            document.getElementById('ai-panel').classList.remove('open');
+        }
+
+        async function applyFakeFix() {
+            const editor = document.getElementById('code-editor');
+            const current = editor.value;
+            if (!current.trim()) return;
+            if (aiBusy) return;
+
+            const provider = getProviderFromActiveAi();
+            const hasKey = await ensureApiKey(provider);
+            if (!hasKey) return;
+
+            const chatBox = document.getElementById('ai-chat-box');
+            chatBox.innerHTML += `
+                <div class="ai-bubble system" id="ai-loading-fix">
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            setAnalyzeBusy(true);
+
+            try {
+                const langName = getLangName(getActiveSnippetLangId());
+                const revised = provider === 'gemini'
+                    ? await callGeminiFix(langName, current)
+                    : await callOpenAiFix(langName, current);
+
+                const clean = stripCodeFences(revised);
+                editor.value = clean;
+                saveActiveSnippet();
+
+                document.getElementById('ai-loading-fix').remove();
+                chatBox.innerHTML += `
+                    <div class="ai-bubble system" style="background-color: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-check" style="color: #10b981;"></i> Changes successfully applied to your note block!
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) {
+                const loading = document.getElementById('ai-loading-fix');
+                if (loading) loading.remove();
+                renderAiError(err.message || 'Fix request failed. Please try again.');
+            } finally {
+                setAnalyzeBusy(false);
+            }
+        }
+
+        // =====================================================
+        //   FILE SYSTEM WORKSPACE (File System Access API)
+        // =====================================================
+
+        let wsState = {
+            rootHandle: null,          // FileSystemDirectoryHandle for the main folder
+            subfolders: [],            // [{name, dirHandle, files:[{name,fileHandle}]}]
+            activeFileHandle: null,    // Currently editing workspace file
+            activeFolderHandle: null,  // Currently selected subfolder for new snips
+        };
+
+        const FS_SUPPORTED = 'showDirectoryPicker' in window;
+
+        async function openWorkspaceFolder() {
+            if (!FS_SUPPORTED) {
+                alert('Your browser does not support the File System Access API.\nPlease use Chrome or Edge 86+ to use this feature.');
+                return;
+            }
+            try {
+                const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                wsState.rootHandle = handle;
+                wsState.subfolders = [];
+                wsState.activeFileHandle = null;
+                document.getElementById('btn-new-ws-folder').disabled = false;
+                await refreshWorkspaceTree();
+            } catch (e) {
+                if (e.name !== 'AbortError') console.error('Folder open error:', e);
+            }
+        }
+
+        async function refreshWorkspaceTree() {
+            if (!wsState.rootHandle) return;
+            wsState.subfolders = [];
+
+            for await (const [name, handle] of wsState.rootHandle.entries()) {
+                if (handle.kind === 'directory') {
+                    const files = [];
+                    for await (const [fname, fhandle] of handle.entries()) {
+                        if (fhandle.kind === 'file') {
+                            files.push({ name: fname, fileHandle: fhandle });
+                        }
+                    }
+                    wsState.subfolders.push({ name, dirHandle: handle, files });
+                }
+            }
+
+            renderWorkspaceTree();
+        }
+
+        function renderWorkspaceTree() {
+            const tree = document.getElementById('workspace-tree');
+            const placeholder = document.getElementById('ws-placeholder');
+            tree.innerHTML = '';
+
+            // Root folder label
+            if (wsState.rootHandle) {
+                const rootLabel = document.createElement('div');
+                rootLabel.className = 'ws-root-label';
+                rootLabel.innerHTML = `<i class="fa-solid fa-hard-drive"></i> ${wsState.rootHandle.name}`;
+                tree.appendChild(rootLabel);
+            }
+
+            if (wsState.subfolders.length === 0) {
+                const ph = document.createElement('div');
+                ph.className = 'ws-placeholder';
+                ph.textContent = wsState.rootHandle
+                    ? 'No subfolders yet. Click \u2795 to create one.'
+                    : 'Open a folder from your PC to get started.';
+                tree.appendChild(ph);
+                return;
+            }
+
+            wsState.subfolders.forEach((folder, fi) => {
+                const folderEl = document.createElement('div');
+                folderEl.className = 'ws-folder';
+
+                folderEl.innerHTML = `
+                    <div class="ws-folder-header">
+                        <div class="ws-folder-header-left">
+                            <i class="fa-solid fa-chevron-right"></i>
+                            <i class="fa-regular fa-folder"></i>
+                            <span>${folder.name}</span>
+                        </div>
+                        <div class="ws-folder-actions">
+                            <button title="New snip in this folder" onclick="createWorkspaceSnip(${fi})">
+                                <i class="fa-solid fa-file-circle-plus"></i>
+                            </button>
+                            <button title="Delete folder" onclick="deleteWorkspaceFolder(${fi})" style="color:#ff4d6d">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                const header = folderEl.querySelector('.ws-folder-header');
+                header.addEventListener('click', (e) => {
+                    if (e.target.closest('.ws-folder-actions')) return;
+                    folderEl.classList.toggle('open');
+                });
+
+                // File list
+                const fileListEl = document.createElement('div');
+                fileListEl.className = 'ws-file-list';
+
+                if (folder.files.length === 0) {
+                    fileListEl.innerHTML = '<div class="ws-placeholder">No snips yet.</div>';
+                } else {
+                    folder.files.forEach((file, fii) => {
+                        const isActive = wsState.activeFileHandle &&
+                            wsState.activeFileHandle.name === file.fileHandle.name;
+                        const fileEl = document.createElement('div');
+                        fileEl.className = `ws-file-item ${isActive ? 'active' : ''}`;
+                        fileEl.innerHTML = `
+                            <span class="ws-file-item-label">
+                                <i class="fa-regular fa-file-code" style="margin-right:6px"></i>${file.name}
+                            </span>
+                            <button class="ws-delete-snippet" title="Delete snip">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        `;
+                        fileEl.onclick = (e) => {
+                            if (e.target.closest('.ws-delete-snippet')) return;
+                            loadWorkspaceSnip(file.fileHandle, folder);
+                        };
+                        fileEl.querySelector('.ws-delete-snippet').onclick = (e) => {
+                            e.stopPropagation();
+                            deleteWorkspaceSnip(fi, fii);
+                        };
+                        fileListEl.appendChild(fileEl);
+                    });
+                }
+
+                folderEl.appendChild(fileListEl);
+                tree.appendChild(folderEl);
+            });
+        }
+
+        async function createWorkspaceFolder() {
+            if (!wsState.rootHandle) {
+                alert('Please open a workspace folder first.');
+                return;
+            }
+            const name = prompt('Enter folder name:');
+            if (!name || !name.trim()) return;
+            const safeName = name.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+            try {
+                await wsState.rootHandle.getDirectoryHandle(safeName, { create: true });
+                await refreshWorkspaceTree();
+            } catch (e) {
+                alert('Could not create folder: ' + e.message);
+            }
+        }
+
+        async function createWorkspaceSnip(folderIndex) {
+            const folder = wsState.subfolders[folderIndex];
+            if (!folder) return;
+
+            const name = prompt(`Snippet name for "${folder.name}":`);
+            if (!name || !name.trim()) return;
+
+            // Ask for language ext
+            const langMap = {
+                python: 'py', javascript: 'js', html: 'html', css: 'css',
+                c: 'c', cpp: 'cpp', java: 'java', markdown: 'md',
+                xml: 'xml', bash: 'sh', go: 'go', rust: 'rs', ruby: 'rb', php: 'php', sql: 'sql'
+            };
+            const allLangOptions = getAllActiveLangs().map(l => `${l.name} (.${langMap[l.id] || l.id})`).join('\n');
+            const langChoice = prompt(`Choose language extension for this snip:\n${allLangOptions}\n\nType just the extension (e.g. js, py, html):`);
+            const ext = (langChoice || 'txt').trim().toLowerCase();
+
+            const fileName = `${name.trim().toLowerCase().replace(/[^a-z0-9-_]/g, '-')}.${ext}`;
+
+            try {
+                const fileHandle = await folder.dirHandle.getFileHandle(fileName, { create: true });
+                // Write empty content placeholder
+                const writable = await fileHandle.createWritable();
+                await writable.write(`// ${fileName}\n`);
+                await writable.close();
+
+                await refreshWorkspaceTree();
+                await loadWorkspaceSnip(fileHandle, folder);
+            } catch (e) {
+                alert('Could not create snip: ' + e.message);
+            }
+        }
+
+        // Map file extension â†’ language id
+        const EXT_TO_LANG = {
+            'py': 'python', 'js': 'javascript', 'html': 'html', 'css': 'css',
+            'c': 'c', 'cpp': 'cpp', 'java': 'java', 'md': 'markdown',
+            'xml': 'xml', 'sh': 'bash', 'bash': 'bash', 'go': 'go',
+            'rs': 'rust', 'rb': 'ruby', 'php': 'php', 'sql': 'sql', 'txt': 'markdown'
+        };
+
+        const LANG_TO_EXT = {
+            'python': 'py', 'javascript': 'js', 'html': 'html', 'css': 'css',
+            'c': 'c', 'cpp': 'cpp', 'java': 'java', 'markdown': 'md',
+            'xml': 'xml', 'bash': 'sh', 'go': 'go', 'rust': 'rs',
+            'ruby': 'rb', 'php': 'php', 'sql': 'sql'
+        };
+
+        function getExtForLang(langId) {
+            return LANG_TO_EXT[langId] || langId || 'txt';
+        }
+
+        async function loadWorkspaceSnip(fileHandle, folder) {
+            try {
+                const file = await fileHandle.getFile();
+                const text = await file.text();
+
+                wsState.activeFileHandle = fileHandle;
+                wsState.activeFolderHandle = folder.dirHandle;
+                state.activeSnippetId = null;   // Deactivate in-app snip
+
+                // Detect language from file extension and update the pop-menu
+                const ext = fileHandle.name.split('.').pop().toLowerCase();
+                const detectedLangId = EXT_TO_LANG[ext] || 'markdown';
+                updateLangMenuSelection(detectedLangId);
+
+                // Show the editor
+                document.getElementById('welcome-screen').style.display = 'none';
+                document.getElementById('note-block').style.display = 'flex';
+                const titleInput = document.getElementById('active-title');
+                titleInput.style.visibility = 'visible';
+                titleInput.value = fileHandle.name;
+                document.getElementById('code-editor').value = text;
+
+                closeAiPanel();
+                renderWorkspaceTree();  // Refresh active highlight
+                renderSidebar();
+            } catch (e) {
+                alert('Could not read file: ' + e.message);
+            }
+        }
+
+        async function changeWorkspaceLang(langId) {
+            if (!wsState.activeFileHandle || !wsState.activeFolderHandle) return;
+            const oldName = wsState.activeFileHandle.name;
+            const baseName = oldName.replace(/\.[^/.]+$/, '');
+            const newExt = getExtForLang(langId);
+            const newName = `${baseName}.${newExt}`;
+            if (newName === oldName) return;
+
+            try {
+                let exists = false;
+                try {
+                    await wsState.activeFolderHandle.getFileHandle(newName);
+                    exists = true;
+                } catch (e) {
+                    exists = false;
+                }
+
+                if (exists && !confirm(`"${newName}" already exists. Replace it?`)) return;
+
+                const content = document.getElementById('code-editor').value;
+                const newHandle = await wsState.activeFolderHandle.getFileHandle(newName, { create: true });
+                const writable = await newHandle.createWritable();
+                await writable.write(content);
+                await writable.close();
+
+                await wsState.activeFolderHandle.removeEntry(oldName);
+
+                wsState.activeFileHandle = newHandle;
+                document.getElementById('active-title').value = newName;
+                await refreshWorkspaceTree();
+                showDiskBadge();
+            } catch (e) {
+                alert('Could not change language: ' + e.message);
+            }
+        }
+
+        async function saveWorkspaceFile() {
+            if (!wsState.activeFileHandle) return;
+            try {
+                const writable = await wsState.activeFileHandle.createWritable();
+                await writable.write(document.getElementById('code-editor').value);
+                await writable.close();
+                showDiskBadge();
+            } catch (e) {
+                console.error('Workspace auto-save failed:', e);
+            }
+        }
+
+        async function deleteWorkspaceSnip(folderIndex, fileIndex) {
+            const folder = wsState.subfolders[folderIndex];
+            if (!folder) return;
+            const file = folder.files[fileIndex];
+            if (!file) return;
+            if (!confirm(`Delete snip "${file.name}"? This cannot be undone.`)) return;
+            try {
+                await folder.dirHandle.removeEntry(file.name);
+                if (wsState.activeFileHandle &&
+                    wsState.activeFileHandle.name === file.fileHandle.name) {
+                    wsState.activeFileHandle = null;
+                    wsState.activeFolderHandle = null;
+                    document.getElementById('welcome-screen').style.display = 'flex';
+                    document.getElementById('note-block').style.display = 'none';
+                    document.getElementById('active-title').style.visibility = 'hidden';
+                }
+                await refreshWorkspaceTree();
+            } catch (e) {
+                alert('Could not delete snip: ' + e.message);
+            }
+        }
+
+        async function deleteWorkspaceFolder(folderIndex) {
+            const folder = wsState.subfolders[folderIndex];
+            if (!folder) return;
+            if (!confirm(`Delete folder "${folder.name}" and all its snips? This cannot be undone.`)) return;
+            try {
+                await wsState.rootHandle.removeEntry(folder.name, { recursive: true });
+                if (wsState.activeFolderHandle &&
+                    wsState.activeFolderHandle.name === folder.dirHandle.name) {
+                    wsState.activeFileHandle = null;
+                    wsState.activeFolderHandle = null;
+                    document.getElementById('welcome-screen').style.display = 'flex';
+                    document.getElementById('note-block').style.display = 'none';
+                    document.getElementById('active-title').style.visibility = 'hidden';
+                }
+                await refreshWorkspaceTree();
+            } catch (e) {
+                alert('Could not delete folder: ' + e.message);
+            }
+        }
+
+        let diskBadgeTimer;
+        function showDiskBadge() {
+            const badge = document.getElementById('disk-save-badge');
+            badge.classList.add('show');
+            clearTimeout(diskBadgeTimer);
+            diskBadgeTimer = setTimeout(() => badge.classList.remove('show'), 2000);
+        }
+
+        // =====================================================
+        //   PATCH: override saveActiveSnippet to also save workspace
+        // =====================================================
+        const _origSaveActiveSnippet = saveActiveSnippet;
+        function saveActiveSnippet() {
+            if (wsState.activeFileHandle) {
+                saveWorkspaceFile();
+                return;
+            }
+            _origSaveActiveSnippet();
+        }
+
+        // Bind workspace buttons after DOM ready
+        function initWorkspace() {
+            document.getElementById('btn-open-folder').addEventListener('click', openWorkspaceFolder);
+            document.getElementById('btn-new-ws-folder').addEventListener('click', createWorkspaceFolder);
+        }
+
+        // --- Run App ---
+        window.addEventListener('DOMContentLoaded', () => { init(); initWorkspace(); });
+
+    </script>
+</body>
+
+</html>
